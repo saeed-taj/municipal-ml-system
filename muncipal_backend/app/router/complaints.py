@@ -1,7 +1,7 @@
 # 1. Framework Imports
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.concurrency import run_in_threadpool
 from asyncpg import Connection
+
 
 
 # Local Project Imports
@@ -9,29 +9,14 @@ from app.schemas import ComplaintCreate
 from app.crud import insert_complaint
 from app.ml.predictor import predict_complaint
 from app.database import get_db
-from app.database import get_pool
+import os
+from dotenv import load_dotenv
 
+import requests
+ 
 router = APIRouter()
+load_dotenv()
 
-@router.post("/check")
-async def checking(data : str):
-    
-    data = "saeed" + "taj" + "wajahat"
-
-    return data
-
-@router.get("/debug-db")
-async def debug_db():
-    pool = await get_pool()
-
-    async with pool.acquire() as conn:
-        user = await conn.fetchval("SELECT current_user")
-        db = await conn.fetchval("SELECT current_database()")
-
-    return {
-        "user": user,
-        "db": db
-    }
 
 @router.post("/complaints")
 async def create_complaint(data: ComplaintCreate, db: Connection = Depends(get_db)):
@@ -47,7 +32,7 @@ async def create_complaint(data: ComplaintCreate, db: Connection = Depends(get_d
         existing_reports = await conn.fetchval(query, data.location, data.issue_type)
         current_count = (existing_reports or 0) + 1
 
-        result = await run_in_threadpool(predict_complaint, data, current_count)
+        result = await predict_complaint(data, current_count)
 
         await insert_complaint(conn, result)
 
@@ -55,3 +40,28 @@ async def create_complaint(data: ComplaintCreate, db: Connection = Depends(get_d
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"System Error: {str(e)}")
+    
+
+# async def geocode_address(location : str):
+#     url=os.getenv("OPEN_STREET_URL")
+
+#     params = {
+#         "q" : location,
+#         "format" : "json"
+#     }
+
+#     headers = {
+#         "User-agent" : "municipal-ml-system"
+#     }
+
+#     response = requests.get(url , params=params , headers=headers)
+#     res = response.json()
+
+
+#     if not res:
+#         return None, None
+    
+#     lat = float(res[0]["lat"])
+#     lon = float(res[0]["lon"])
+
+#     return lat , lon

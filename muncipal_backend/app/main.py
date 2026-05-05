@@ -4,6 +4,11 @@ from app.database import init_pool, close_pool , pool # Assuming you add a close
 from app.create_db import create_tables
 from app.router import complaints
 from app.database import get_pool
+from fastapi.middleware.cors import CORSMiddleware
+import os
+
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 # Define the Lifespan (Startup & Shutdown)
 @asynccontextmanager
@@ -26,4 +31,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[FRONTEND_URL],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(complaints.router)

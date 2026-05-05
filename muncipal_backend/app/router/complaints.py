@@ -9,10 +9,8 @@ from app.schemas import ComplaintCreate
 from app.crud import insert_complaint
 from app.ml.predictor import predict_complaint
 from app.database import get_db
-import os
 from dotenv import load_dotenv
 
-import requests
  
 router = APIRouter()
 load_dotenv()
@@ -41,27 +39,3 @@ async def create_complaint(data: ComplaintCreate, db: Connection = Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"System Error: {str(e)}")
     
-
-# async def geocode_address(location : str):
-#     url=os.getenv("OPEN_STREET_URL")
-
-#     params = {
-#         "q" : location,
-#         "format" : "json"
-#     }
-
-#     headers = {
-#         "User-agent" : "municipal-ml-system"
-#     }
-
-#     response = requests.get(url , params=params , headers=headers)
-#     res = response.json()
-
-
-#     if not res:
-#         return None, None
-    
-#     lat = float(res[0]["lat"])
-#     lon = float(res[0]["lon"])
-
-#     return lat , lon

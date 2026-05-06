@@ -35,6 +35,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
     allow_methods=["*"],
+    allow_credentials=True,
     allow_headers=["*"],
 )
 app.include_router(complaints.router)
